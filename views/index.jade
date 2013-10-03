@@ -1,6 +1,7 @@
 extends layout
 
 block content
+  script var agoToken='#{agoToken}';
   div#navBar.navbar.navbar-default.navbar-fixed-top
     div.navbar-header
       button(type='button',class='navbar-toggle',data-toggle='collapse',data-target='.navbar-collapse')
@@ -19,5 +20,6 @@ block content
           span.glyphicon.glyphicon-pencil
         button(type='button',class='btn btn-default')
           span.glyphicon.glyphicon-picture
+    p.navbar-text.pull-right Signed in as #{userName}
   div.container.mapcontainer
     div#map
