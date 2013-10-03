@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  div#navBar.navbar.navbar-default.navbar-fixed-top
+    div.navbar-header
+      button(type='button',class='navbar-toggle',data-toggle='collapse',data-target='.navbar-collapse')
+        span.icon-bar
+        span.icon-bar
+        span.icon-bar
+      form(class='navbar-form navbar-left',role='search')
+        div.form-group
+          input( type='text',class='form-control',placeholder='#{searchPrompt}')
+        button(type='button',class='btn btn-default')
+          span.glyphicon.glyphicon-search
+      form(class='navbar-form navbar-left',role='maptools')
+        button(id='addPinBtn',type='button',class='btn btn-default')
+          span.glyphicon.glyphicon-map-marker
+        button(type='button',class='btn btn-default')
+          span.glyphicon.glyphicon-pencil
+        button(type='button',class='btn btn-default')
+          span.glyphicon.glyphicon-picture
+  div.container.mapcontainer
+    div#map
