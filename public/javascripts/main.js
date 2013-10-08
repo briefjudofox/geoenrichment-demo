@@ -24,11 +24,9 @@ $(document).ready(function () {
   //Init draw tool
   var drawControl = new L.Control.Draw({
     draw:{
-      polyline:{metric:false}
+      polyline:false
     },
-    edit: {
-      featureGroup: drawnItems
-    }
+    edit:false
   });
 
   map.addControl(drawControl);
