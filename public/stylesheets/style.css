@@ -19,3 +19,13 @@ body {
   width: 100%;
   height: 100%;
 }
+svg {
+  padding: 10px 0 0 10px;
+}
+.arc {
+  stroke: #fff;
+}
+.arc:hover {
+  stroke: #bce8f1;
+  stroke-width: 4;
+}
