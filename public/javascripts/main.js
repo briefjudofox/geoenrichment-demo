@@ -46,23 +46,33 @@ $(document).ready(function () {
 });
 
 //Geo Enrich the specified layer
-function enrich(type, layer){
-    var enrichService = gs.GeoEnrichmentService({token:agoToken});
-    var params;
-    if (type === 'circle') {
-      params = {studyAreas:[{"geometry":{"x":layer.getLatLng().lng,"y":layer.getLatLng().lat}}],
-        studyAreasOptions:{"areaType":"RingBuffer","bufferUnits":"esriMeters","bufferRadii":[layer.getRadius()]},
-        dataCollections : ["Age"]
-      };
-      enrichService.enrich(params,function (err, data) {
-        if(err){handleError(err);}
-        else{
-          var content = enrichmentToDonutHtml(data);
-          layer.bindPopup(content).openPopup();
-        }
-      });
-
+function enrich(type, layer) {
+  var enrichService = gs.GeoEnrichmentService({token: agoToken});
+  var params;
+  if (type === 'circle') {
+    params = {studyAreas: [
+      {"geometry": {"x": layer.getLatLng().lng, "y": layer.getLatLng().lat}}],
+      studyAreasOptions: {"areaType": "RingBuffer", "bufferUnits": "esriMeters", "bufferRadii": [layer.getRadius()]},
+      dataCollections: ["Age"]
+    };
+  }
+  else if (type === 'rectangle' || type === 'polygon') {
+   params = {studyAreas: [
+      {"geometry":{"rings":layer.toGeoJSON().geometry.coordinates}}],
+      dataCollections: ["Age"]
+    };
+  } else {
+    return;
+  }
+  enrichService.enrich(params, function (err, data) {
+    if (err) {
+      handleError(err);
     }
+    else {
+      var content = enrichmentToDonutHtml(data);
+      layer.bindPopup(content).openPopup();
+    }
+  });
 }
 
 //Generic AGO error handler
@@ -83,6 +93,8 @@ $('#addPinBtn').on('click', function (e) {
   });
 });
 
+//leaflet to ago related
+//function toAgoPolygon()
 
 //////////////d3 related
 
