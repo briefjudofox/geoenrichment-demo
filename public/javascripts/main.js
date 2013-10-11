@@ -2,7 +2,7 @@
 //init map
 var map;
 var gs;
-
+var drawnItems;
 $(document).ready(function () {
 
   map = L.map('map', {
@@ -18,7 +18,7 @@ $(document).ready(function () {
   L.esri.basemapLayer("Gray").addTo(map);
 
   //Add FeatureGroup for draw tool
-  var drawnItems = new L.FeatureGroup();
+  drawnItems = new L.FeatureGroup();
   map.addLayer(drawnItems);
 
   //Init draw tool
@@ -36,16 +36,15 @@ $(document).ready(function () {
     var type = e.layerType,
       layer = e.layer;
     drawnItems.addLayer(layer);
-    enrich(type, layer);
+    geomAddHandler(type, layer);
   });
 
   //init geoservices
-  gs = new Geoservices.Geoservices();
+  gs = new Geoservices.Geoservices({token: agoToken});
 });
 
 //Geo Enrich the specified layer
-function enrich(type, layer) {
-  var enrichService = gs.GeoEnrichmentService({token: agoToken});
+function geomAddHandler(type, layer) {
   var params;
   if (type === 'circle') {
     params = {studyAreas: [
@@ -59,10 +58,20 @@ function enrich(type, layer) {
       {"geometry":{"rings":layer.toGeoJSON().geometry.coordinates}}],
       dataCollections: ["Age"]
     };
-  } else {
+  }
+  else if(type === 'marker'){
+     handleMarkerInit(layer);
     return;
   }
-  enrichService.enrich(params, function (err, data) {
+  else {
+    return;
+  }
+   enrich(layer,params);
+}
+
+function enrich(layer,params){
+  //var enrichService = gs.GeoEnrichmentService({token: agoToken});
+  gs.enrich(params, function (err, data) {
     if (err) {
       handleError(err);
     }
@@ -73,6 +82,49 @@ function enrich(type, layer) {
   });
 }
 
+function enrichAndDrawPoly(params){
+  gs.enrich(params, function (err, data) {
+    if (err) {
+      handleError(err);
+    }
+    else {
+      var rings = data.results[0].value.FeatureSet[0].features[0].geometry.rings;
+      var poly = L.GeoJSON.geometryToLayer({type:"Polygon",coordinates:rings});
+      drawnItems.addLayer(poly);
+      var content = enrichmentToDonutHtml(data);
+      poly.bindPopup(content).openPopup();
+    }
+  });
+}
+
+function handleMarkerInit(marker){
+  var detachedDiv = document.createElement("div");
+  $(detachedDiv).load('/fragments/marker-init-fragment.html',function(){
+    $(detachedDiv).find(".btn-add-buffer").on('click', function (e) {
+      var bufVal = $(detachedDiv).find(".point-buffer-select").val();
+      var bufType = $(detachedDiv).find(".point-buffer-type-select").val();
+      if(bufType == "Ring"){
+        var circle = L.circle(marker.getLatLng(),1609.34 * bufVal);
+        drawnItems.addLayer(circle);
+        geomAddHandler("circle",circle);
+        drawnItems.removeLayer(marker);
+      }else if(bufType == "DriveTime"){
+        var params = {
+            studyAreas:[{"geometry":{"x":marker.getLatLng().lng,"y":marker.getLatLng().lat}}],
+            dataCollections : ["Age"],
+            studyAreasOptions:{"areaType":"DriveTimeBuffer","bufferUnits":"esriDriveTimeUnitsMinutes","bufferRadii":[bufVal]},
+            returnGeometry:true
+        }
+        enrichAndDrawPoly(params);
+        drawnItems.removeLayer(marker);
+      }
+    });
+
+    marker.bindPopup(detachedDiv).openPopup();
+
+  });
+
+}
 //Generic AGO error handler
 function handleError(err){
   if(err && err.code && err.code == 498){
@@ -106,11 +158,13 @@ $('#addPinBtn').on('click', function (e) {
  * @returns {*}
  */
 function enrichmentToDonutHtml(data){
-  var detachedHtml = d3.select(document.createElement("div"))
+  var detachedHtml = d3.select(document.createElement("div"));
+  detachedHtml.append('h2').text('Age Distribution');
+  var chartContainer = detachedHtml.append("div")
     .attr("class","row");
-  var legendHtml = detachedHtml.append("div")
+  var legendHtml = chartContainer.append("div")
     .attr("class","col-md-4");
-  var chartHtml = detachedHtml.append("div")
+  var chartHtml = chartContainer.append("div")
       .attr("class","col-md-8");
 
   var radius = 74,

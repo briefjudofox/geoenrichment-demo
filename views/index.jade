@@ -1,7 +1,7 @@
 extends layout
 
 block content
-  script var agoToken='#{agoToken}';
+  script var agoToken=!{JSON.stringify(agoToken)};
   div#navBar.navbar.navbar-default.navbar-fixed-top
     div.navbar-header
       button(type='button',class='navbar-toggle',data-toggle='collapse',data-target='.navbar-collapse')
