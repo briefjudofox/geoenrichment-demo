@@ -7,6 +7,9 @@ body {
   height: 100%;
   width: 100%;
 }
+.search-input {
+  width: 300px;
+}
 .mapcontainer {
   margin: 0;
   padding: 0;
@@ -14,6 +17,10 @@ body {
   height: 100%;
   min-width: 100%;
   width: 100%;
+}
+#map {
+  width: 100%;
+  height: 100%;
 }
 .point-buffer-select {
   min-width: 75px;
@@ -23,10 +30,6 @@ body {
 }
 div.leaflet-popup-content-wrapper {
   width: 445px;
-}
-#map {
-  width: 100%;
-  height: 100%;
 }
 svg {
   padding: 10px 0 0 10px;

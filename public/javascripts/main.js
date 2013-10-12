@@ -1,5 +1,4 @@
-
-//init map
+//init app
 var map;
 var gs;
 var drawnItems;
@@ -41,7 +40,30 @@ $(document).ready(function () {
 
   //init geoservices
   gs = new Geoservices.Geoservices({token: agoToken});
+
+  initNavBarHandlers();
 });
+
+function initNavBarHandlers(){
+  $('#searchBtn').on('click', function (e) {
+    geocode($("#searchInput").val());
+  });
+}
+
+function geocode(searchText){
+  gs.geocode({ text: searchText, sourceCountry:"USA"},function(err, res){
+    if(res.locations && res.locations.length > 0){
+      var ext = res.locations[0].extent;
+      var geom = res.locations[0].feature.geometry;
+      map.fitBounds([[ext.ymin,ext.xmin],[ext.ymax,ext.xmax]]);
+      var marker = L.marker([geom.y, geom.x]);
+      drawnItems.addLayer(marker);
+      geomAddHandler('marker',marker)
+    }else{
+      alert('Sorry. No matches found.');
+    }
+  });
+}
 
 //Geo Enrich the specified layer
 function geomAddHandler(type, layer) {
@@ -69,8 +91,14 @@ function geomAddHandler(type, layer) {
    enrich(layer,params);
 }
 
+/**
+ * Calls the enrich method using the specified params and
+ * appends the results to a pop-up bound to the layer param
+ * where layer is a Leaflet Layer (polygon, circle, rectangle, etc.)
+ * @param layer
+ * @param params
+ */
 function enrich(layer,params){
-  //var enrichService = gs.GeoEnrichmentService({token: agoToken});
   gs.enrich(params, function (err, data) {
     if (err) {
       handleError(err);
@@ -82,6 +110,14 @@ function enrich(layer,params){
   });
 }
 
+/**
+ * Calls the enrich service for the given parameters.
+ * Assumes that return geometry is set to true and that
+ * geom type is polygon.  Adds a new layer for the polygon
+ * and appends the results to a pop-up bound bound to the
+ * polygon.
+ * @param params
+ */
 function enrichAndDrawPoly(params){
   gs.enrich(params, function (err, data) {
     if (err) {
@@ -91,12 +127,19 @@ function enrichAndDrawPoly(params){
       var rings = data.results[0].value.FeatureSet[0].features[0].geometry.rings;
       var poly = L.GeoJSON.geometryToLayer({type:"Polygon",coordinates:rings});
       drawnItems.addLayer(poly);
+      map.fitBounds(poly.getBounds());
       var content = enrichmentToDonutHtml(data);
       poly.bindPopup(content).openPopup();
     }
   });
 }
 
+/**
+ * Builds a pop-up and content for marker adds (click on map or
+ * geocode result).  Options in pop-up are add a ring or drive
+ * time.  Handlers call enrich methods automatically.
+ * @param marker
+ */
 function handleMarkerInit(marker){
   var detachedDiv = document.createElement("div");
   $(detachedDiv).load('/fragments/marker-init-fragment.html',function(){
@@ -106,6 +149,7 @@ function handleMarkerInit(marker){
       if(bufType == "Ring"){
         var circle = L.circle(marker.getLatLng(),1609.34 * bufVal);
         drawnItems.addLayer(circle);
+        map.fitBounds(circle.getBounds());
         geomAddHandler("circle",circle);
         drawnItems.removeLayer(marker);
       }else if(bufType == "DriveTime"){
@@ -136,17 +180,6 @@ function handleError(err){
   }
 }
 
-//add point click event
-$('#addPinBtn').on('click', function (e) {
-  map.addOneTimeEventListener('click', function (e) {
-    L.marker(e.latlng).addTo(map);
-  });
-});
-
-//leaflet to ago related
-//function toAgoPolygon()
-
-//////////////d3 related
 
 /**
  * Returns a detached div containing SVG based legend and donut charts
