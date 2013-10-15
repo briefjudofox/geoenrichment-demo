@@ -41,3 +41,6 @@ svg {
   stroke: #bce8f1;
   stroke-width: 4;
 }
+.pie {
+  padding: 0;
+}
