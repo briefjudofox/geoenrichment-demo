@@ -44,12 +44,22 @@ $(document).ready(function () {
   initNavBarHandlers();
 });
 
+//init nav bar handlers (add geocode to input and search button)
 function initNavBarHandlers(){
   $('#searchBtn').on('click', function (e) {
     geocode($("#searchInput").val());
   });
+
+  $('#searchInput').on('keypress',function (e) {
+    if (e.which == 13) {
+      e.preventDefault();
+      geocode($("#searchInput").val());
+    }
+
+  });
 }
 
+//issues a geocode request
 function geocode(searchText){
   gs.geocode({ text: searchText, sourceCountry:"USA"},function(err, res){
     if(res.locations && res.locations.length > 0){
