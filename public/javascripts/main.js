@@ -109,6 +109,7 @@ function geomAddHandler(type, layer) {
  * @param params
  */
 function enrich(layer,params){
+  params.useData = {"sourceCountry":"US"}; //for now US only
   gs.enrich(params, function (err, data) {
     if (err) {
       handleError(err);
