@@ -28,7 +28,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
   app.set('redirecturl','http://localhost.esri.com:3000/')
 }else if ('production' == app.get('env')) {
-  app.set('redirecturl','http://localhost.esri.com:3000/')
+  app.set('redirecturl','http://geoenrichment-demo.herokuapp.com/')
 }
 
 app.get('/', tokencheck.tokencheck);
