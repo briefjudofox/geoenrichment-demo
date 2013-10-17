@@ -131,6 +131,7 @@ function enrich(layer,params){
  */
 function enrichAndDrawPoly(params){
   gs.enrich(params, function (err, data) {
+    console.log(data);
     if (err) {
       handleError(err);
     }
@@ -154,6 +155,7 @@ function enrichAndDrawPoly(params){
 function handleMarkerInit(marker){
   var detachedDiv = document.createElement("div");
   $(detachedDiv).load('/fragments/marker-init-fragment.html',function(){
+    //Rings and Drivetimes
     $(detachedDiv).find(".btn-add-buffer").on('click', function (e) {
       var bufVal = $(detachedDiv).find(".point-buffer-select").val();
       var bufType = $(detachedDiv).find(".point-buffer-type-select").val();
@@ -174,7 +176,19 @@ function handleMarkerInit(marker){
         drawnItems.removeLayer(marker);
       }
     });
+    //Standard Geogs
+    $(detachedDiv).find(".btn-add-geog").on('click', function (e) {
+      var geogLayer = $(detachedDiv).find(".std-geog-select").val();
+        var params = {
+            studyAreas:[{"geometry":{"x":marker.getLatLng().lng,"y":marker.getLatLng().lat},
+              "areaType":"StandardGeography","intersectingGeographies":[{"sourceCountry":"US","layer":geogLayer}]}],
+            dataCollections : ["Age"],
+            returnGeometry:true
+        }
+        enrichAndDrawPoly(params);
+        drawnItems.removeLayer(marker);
 
+    });
     marker.bindPopup(detachedDiv).openPopup();
 
   });
