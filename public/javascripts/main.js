@@ -131,7 +131,6 @@ function enrich(layer,params){
  */
 function enrichAndDrawPoly(params){
   gs.enrich(params, function (err, data) {
-    console.log(data);
     if (err) {
       handleError(err);
     }
@@ -196,13 +195,18 @@ function handleMarkerInit(marker){
 }
 //Generic AGO error handler
 function handleError(err){
-  if(err && err.code && err.code == 498){
-    alert('Oh no! Your arcgis.com token expired. Dismiss this message to log in again.');
-    window.location.replace('/');
-  }else{
-    alert('Error...check console');
-    console.log( err);
+  var message = "Error! :( Check Console";
+  if(err && err.code) {
+    if(err.code == 498){
+      message = 'Oh no! Your arcgis.com token expired. Dismiss this message to log in again.';
+      window.location.replace('/');
+    }else if(err.code == 110023){
+      message = 'Sorry we can\'t create a study area here.';
+    }
+
   }
+  console.log( err);
+  alert(message);
 }
 
 
@@ -293,7 +297,6 @@ function enrichmentToDonutHtml(data){
     var numFormat = d3.format(",");
     var perFormat = d3.format("%");
 
-    // console.log([values]);
     var svg = chartHtml.selectAll(".pie")
       .data(dataSets)
       .enter().append("svg")
