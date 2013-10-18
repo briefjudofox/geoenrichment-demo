@@ -109,12 +109,14 @@ function geomAddHandler(type, layer) {
  * @param params
  */
 function enrich(layer,params){
+  progressBar(true);
   params.useData = {"sourceCountry":"US"}; //for now US only
   gs.enrich(params, function (err, data) {
     if (err) {
       handleError(err);
     }
     else {
+      progressBar(false);
       var content = enrichmentToDonutHtml(data);
       layer.bindPopup(content).openPopup();
     }
@@ -130,11 +132,13 @@ function enrich(layer,params){
  * @param params
  */
 function enrichAndDrawPoly(params){
+  progressBar(true);
   gs.enrich(params, function (err, data) {
     if (err) {
       handleError(err);
     }
     else {
+      progressBar(false);
       var rings = data.results[0].value.FeatureSet[0].features[0].geometry.rings;
       var poly = L.GeoJSON.geometryToLayer({type:"Polygon",coordinates:rings});
       drawnItems.addLayer(poly);
@@ -195,6 +199,7 @@ function handleMarkerInit(marker){
 }
 //Generic AGO error handler
 function handleError(err){
+  progressBar(false);
   var message = "Error! :( Check Console";
   if(err && err.code) {
     if(err.code == 498){
@@ -209,6 +214,9 @@ function handleError(err){
   alert(message);
 }
 
+function progressBar(show){
+  show ? $('#progressBar').show() : $('#progressBar').hide();
+}
 
 /**
  * Returns a detached div containing SVG based legend and donut charts
