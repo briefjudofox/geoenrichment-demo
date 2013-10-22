@@ -81,14 +81,12 @@ function geomAddHandler(type, layer) {
   if (type === 'circle') {
     params = {studyAreas: [
       {"geometry": {"x": layer.getLatLng().lng, "y": layer.getLatLng().lat}}],
-      studyAreasOptions: {"areaType": "RingBuffer", "bufferUnits": "esriMeters", "bufferRadii": [layer.getRadius()]},
-      dataCollections: ["Age"]
+      studyAreasOptions: {"areaType": "RingBuffer", "bufferUnits": "esriMeters", "bufferRadii": [layer.getRadius()]}
     };
   }
   else if (type === 'rectangle' || type === 'polygon') {
    params = {studyAreas: [
-      {"geometry":{"rings":layer.toGeoJSON().geometry.coordinates}}],
-      dataCollections: ["Age"]
+      {"geometry":{"rings":layer.toGeoJSON().geometry.coordinates}}]
     };
   }
   else if(type === 'marker'){
@@ -110,15 +108,14 @@ function geomAddHandler(type, layer) {
  */
 function enrich(layer,params){
   progressBar(true);
-  params.useData = {"sourceCountry":"US"}; //for now US only
+  appendEnrichParams(params);
   gs.enrich(params, function (err, data) {
     if (err) {
       handleError(err);
     }
     else {
       progressBar(false);
-      var content = enrichmentToDonutHtml(data);
-      layer.bindPopup(content).openPopup();
+      layer.bindPopup(buildStudyPopUp(data)).openPopup();
     }
   });
 }
@@ -133,7 +130,8 @@ function enrich(layer,params){
  */
 function enrichAndDrawPoly(params){
   progressBar(true);
-  gs.enrich(params, function (err, data) {
+  appendEnrichParams(params);
+ gs.enrich(params, function (err, data) {
     if (err) {
       handleError(err);
     }
@@ -143,10 +141,27 @@ function enrichAndDrawPoly(params){
       var poly = L.GeoJSON.geometryToLayer({type:"Polygon",coordinates:rings});
       drawnItems.addLayer(poly);
       map.fitBounds(poly.getBounds());
-      var content = enrichmentToDonutHtml(data);
-      poly.bindPopup(content).openPopup();
+      poly.bindPopup(buildStudyPopUp(data)).openPopup();
     }
   });
+}
+
+function appendEnrichParams(params){
+  params.useData = {"sourceCountry":"US"}; //for now US only
+  params.dataCollections = ["Age"];
+  params.analysisVariables = ["POP01","POP02","POP03","POP04","POP05","POP06","POP07","POP08","POP09","POP10","POP11","POP12","POP13","POP14","POP15","POP16","POP17","POP18","POP19","POP20","POP21","POP22","POP23","POP24","POP25","POP26","POP27","POP28","POP29","POP30","POP31","POP32","POP33","POP34","POP35","POP36","POP37","POP38","POP39","POP40","POP41","POP42","POP43","POP44","POP45","POP46","POP47","POP48","POP49","POP50","POP51","POP52","POP53","POP54","POP55","POP56","POP57","POP58","POP59","POP60","POP61","POP62","POP63","POP64","POP65"];
+}
+
+function buildStudyPopUp(data){
+  var detachedDiv = document.createElement("div");
+  var ageContent = enrichmentToDonutHtml(data);
+  var tapestryContent = enrichmentToTreeMapHtml(data);
+  $(detachedDiv).load('/fragments/study-popup-fragment.html',function(){
+    $(detachedDiv).find(".popup-tapestry-content").append(tapestryContent);
+    $(detachedDiv).find(".popup-age-content").append(ageContent);
+  });
+
+  return detachedDiv;
 }
 
 /**
@@ -171,7 +186,6 @@ function handleMarkerInit(marker){
       }else if(bufType == "DriveTime"){
         var params = {
             studyAreas:[{"geometry":{"x":marker.getLatLng().lng,"y":marker.getLatLng().lat}}],
-            dataCollections : ["Age"],
             studyAreasOptions:{"areaType":"DriveTimeBuffer","bufferUnits":"esriDriveTimeUnitsMinutes","bufferRadii":[bufVal]},
             returnGeometry:true
         }
@@ -185,7 +199,6 @@ function handleMarkerInit(marker){
         var params = {
             studyAreas:[{"geometry":{"x":marker.getLatLng().lng,"y":marker.getLatLng().lat},
               "areaType":"StandardGeography","intersectingGeographies":[{"sourceCountry":"US","layer":geogLayer}]}],
-            dataCollections : ["Age"],
             returnGeometry:true
         }
         enrichAndDrawPoly(params);
@@ -195,8 +208,8 @@ function handleMarkerInit(marker){
     marker.bindPopup(detachedDiv).openPopup();
 
   });
-
 }
+
 //Generic AGO error handler
 function handleError(err){
   progressBar(false);
@@ -228,8 +241,9 @@ function progressBar(show){
  * @returns {*}
  */
 function enrichmentToDonutHtml(data){
+  var enrichedData = data;
   var detachedHtml = d3.select(document.createElement("div"));
-  detachedHtml.append('h2').text('Age Distribution');
+  detachedHtml.append('h3').text('Age Distribution');
   var chartContainer = detachedHtml.append("div")
     .attr("class","row");
   var legendHtml = chartContainer.append("div")
@@ -269,11 +283,11 @@ function enrichmentToDonutHtml(data){
       }}
     ];
 
-    data = mergeFieldsAndValues(data, summaryFieldFunctions);
+    enrichedData = mergeFieldsAndValues(enrichedData, summaryFieldFunctions);
 
     var dataSets = [];
-    dataSets.push(data.filter(function (d) {return d.name.indexOf('MALE') > -1;}));
-    dataSets.push(data.filter(function (d) {return d.name.indexOf('FEM') > -1;}));
+    dataSets.push(enrichedData.filter(function (d) {return d.name.indexOf('MALE') > -1;}));
+    dataSets.push(enrichedData.filter(function (d) {return d.name.indexOf('FEM') > -1;}));
 
     color.domain(dataSets[0].map(function (d) {return d.alias.split(' ')[2]}));
 
@@ -342,6 +356,122 @@ function enrichmentToDonutHtml(data){
       });
 
     return detachedHtml[0][0];
+}
+
+
+function enrichmentToTreeMapHtml(data) {
+  var enrichedData = data;
+  var detachedHtml = d3.select(document.createElement("div"));
+  detachedHtml.append('h3').text('Tapestry Segmentation');
+
+
+  var w = 400,
+    h = 400,
+    x = d3.scale.linear().range([0, w]),
+    y = d3.scale.linear().range([0, h]),
+    color = d3.scale.category20c(),
+    root,
+    node;
+
+  var treemap = d3.layout.treemap()
+    .round(false)
+    .size([w, h])
+    .sticky(true)
+    .mode("squarify")
+    .children(function (d) {
+      return d.values;
+    })
+    .value(function (d) {
+      return d.value;
+    });
+
+  var svg = detachedHtml.append("div")
+    .attr("class", "chart")
+    .style("width", w + "px")
+    .style("height", h + "px")
+    .append("svg:svg")
+    .attr("width", w)
+    .attr("height", h)
+    .append("svg:g")
+    .attr("transform", "translate(.5,.5)");
+
+
+  d3.json("javascripts/tapestrysegments.json", function (segmentData) {
+    var tapSegs = segmentData;
+    var numFormat = d3.format(",");
+    var perFormat = d3.format("%");
+
+    enrichedData = mergeFieldsAndValues(enrichedData, null).filter(function (d) {
+      return (d.name.indexOf('POP') > -1 && d.value > 0);
+    });
+
+    var nest = d3.nest();
+    var nestedData = nest.key(function (d) {return tapSegs.segments[d.name].group})
+      .entries(enrichedData);
+    node = root = {key: "Tapestry", values: nestedData};
+
+    var nodes = treemap.nodes(root)
+      .filter(function (d) {
+        return !d.values;
+      });
+
+    var cell = svg.selectAll("g")
+      .data(nodes)
+      .enter().append("svg:g")
+      .attr("class", "cell")
+      .attr("transform", function (d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      })
+      .on("click", function (d) {
+        return zoom(node == d.parent ? root : d.parent);
+      });
+
+    cell.append("svg:rect")
+      .attr("rx", 5)
+      .attr("ry", 5)
+      .attr("width", function (d) {
+        return (d.dx - 1) < 1 ? 0 : (d.dx - 1);
+      })
+      .attr("height", function (d) {
+        return (d.dy - 1) < 1 ? 0 : (d.dy - 1);
+      })
+      .attr("class", "tap-rect")
+      .style("fill", function (d) {
+        return color(tapSegs.segments[d.name].group);
+      })
+      .append("title")
+      .text(function (d, i) {
+        return [ 'Group:', tapSegs.segments[d.name].group, '\n',
+          'Segment:', tapSegs.segments[d.name].alias2, '\n',
+          perFormat(d.value / d.parent.value), 'of segment population', '\n',
+          numFormat(d.value), 'of', numFormat(d.parent.value), 'people'].join(' ');
+      });
+  });
+
+  var zoom = function (d) {
+    var kx = w / d.dx, ky = h / d.dy;
+    x.domain([d.x, d.x + d.dx]);
+    y.domain([d.y, d.y + d.dy]);
+
+    var t = svg.selectAll("g.cell").transition()
+      .duration(d3.event.altKey ? 7500 : 750)
+      .attr("transform", function (d) {
+        return "translate(" + x(d.x) + "," + y(d.y) + ")";
+      });
+
+    t.select("rect")
+      .attr("width", function (d) {
+        return kx * ((d.dx - 1) < 1 ? .1 : (d.dx - 1));
+      })
+      .attr("height", function (d) {
+        return ky * ( (d.dy - 1) < 1 ? .1 : (d.dy - 1) );
+      })
+
+    node = d;
+    d3.event.stopPropagation();
+  }
+
+  return detachedHtml[0][0];
 }
 
 /**
