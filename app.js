@@ -33,6 +33,7 @@ if ('development' == app.get('env')) {
 
 app.get('/', tokencheck.tokencheck);
 app.get('/map', routes.index);
+app.get('/tapestry', routes.tapestry);
 app.get('/users', user.list);
 
 http.createServer(app).listen(app.get('port'), function(){

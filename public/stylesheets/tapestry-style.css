@@ -1,0 +1,40 @@
+body {
+  padding-top: 51px;
+}
+.search-input {
+  width: 500px;
+}
+div.nav.navbar-nav {
+  width: 100px;
+  height: 50px;
+  padding: 0px;
+}
+div.progress.progress-striped.active {
+  margin-top: 8px;
+  height: 33px;
+  padding: 0px;
+}
+.data-container {
+  padding: 15px;
+}
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+.node circle {
+  stroke: #4682b4;
+  stroke-width: 1.5px;
+}
+.node {
+  font: 10px sans-serif;
+}
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+.tap-rect:hover {
+  stroke: #bce8f1;
+  stroke-width: 4;
+}
