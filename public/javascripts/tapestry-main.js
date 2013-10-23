@@ -81,6 +81,7 @@ function enrich(params){
 }*/
 
 function appendEnrichParams(params){
+  params.forStorage=false;
   params.useData = {"sourceCountry":"US"}; //for now US only
   params.analysisVariables = ["POP01","POP02","POP03","POP04","POP05","POP06","POP07","POP08","POP09","POP10","POP11","POP12","POP13","POP14","POP15","POP16","POP17","POP18","POP19","POP20","POP21","POP22","POP23","POP24","POP25","POP26","POP27","POP28","POP29","POP30","POP31","POP32","POP33","POP34","POP35","POP36","POP37","POP38","POP39","POP40","POP41","POP42","POP43","POP44","POP45","POP46","POP47","POP48","POP49","POP50","POP51","POP52","POP53","POP54","POP55","POP56","POP57","POP58","POP59","POP60","POP61","POP62","POP63","POP64","POP65"];
 }
