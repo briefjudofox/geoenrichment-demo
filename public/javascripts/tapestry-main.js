@@ -12,7 +12,7 @@ $(document).ready(function () {
   initNavBarHandlers();
 
   //Init with dummy data
-  d3.json("tapestry-only.json", function(data) {
+  d3.json("javascripts/tapestry-only.json", function(data) {
     updateCharts(data);
   });
 });
