@@ -1,7 +1,7 @@
 geoenrichment-demo
 ---
 
-This is a simple web-app that uses esri's [geoenrichment API ](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000021r000000) to calculate age characteristics and Esri tapestry data for user defined areas.  A user can generate a drive time or standard geography around a point or draw a circle, rectangle, or custom polygon to define an area.  If you have an [arcgis.com](http://www.arcgis.com/home/) account you can demo the mapping app [here](http://geoenrichment-demo.herokuapp.com/map).  It should look something like this:
+This is a simple web-app that uses esri's [geoenrichment API ](http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#//02r30000021r000000) to calculate age characteristics and Esri tapestry data for user defined areas.  A user can generate a drive time or standard geography around a point or draw a circle, rectangle, or custom polygon to define an area.  If you have an [arcgis.com](http://www.arcgis.com/home/) account you can demo the mapping app [here](http://geoenrichment-demo.herokuapp.com/map) (you can also create a [Trial Account](http://www.arcgis.com/features/free-trial.html)).  It should look something like this:
 
 ![My image](https://raw.github.com/briefjudofox/geoenrichment-demo/gh-pages/images/map.png)
 
